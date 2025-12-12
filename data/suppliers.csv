@@ -1,0 +1,11 @@
+supplier_id,supplier_name,base_lead_time_days,on_time_delivery_rate,defect_rate_pct
+SUP01,Supplier 1,20,0.878,0.92
+SUP02,Supplier 2,6,0.871,0.2
+SUP03,Supplier 3,17,0.884,1.61
+SUP04,Supplier 4,19,0.887,1.45
+SUP05,Supplier 5,20,0.87,0.73
+SUP06,Supplier 6,6,0.925,1.18
+SUP07,Supplier 7,15,0.857,1.25
+SUP08,Supplier 8,10,0.857,1.11
+SUP09,Supplier 9,10,0.859,0.32
+SUP10,Supplier 10,12,0.902,1.89

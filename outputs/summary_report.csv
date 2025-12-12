@@ -1,0 +1,21 @@
+metric,value
+Total SKU-Location Combinations,240.0
+Demand Shifts Detected,188.0
+Demand Shift Rate (%),78.33
+Items - Dead Stock,8.0
+Items - Non Moving,0.0
+Items - Slow Moving,4.0
+Items - Active,228.0
+Risk Level - Critical,0.0
+Risk Level - High,1.0
+Risk Level - Medium,132.0
+Risk Level - Low,91.0
+Risk Level - Minimal,16.0
+Segment - AX,7.0
+Segment - AY,9.0
+Segment - BY,26.0
+Segment - BX,9.0
+Segment - BZ,5.0
+Segment - CZ,83.0
+Segment - CY,75.0
+Segment - CX,26.0
