@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/alerts/page": "app/alerts/page.js",
+  "/demand-shifts/page": "app/demand-shifts/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/non-moving/page": "app/non-moving/page.js",
+  "/page": "app/page.js",
+  "/segmentation/page": "app/segmentation/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/sku/[id]/page": "app/sku/[id]/page.js"
+}

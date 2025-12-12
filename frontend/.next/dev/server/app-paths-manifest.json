@@ -1,0 +1,8 @@
+{
+  "/alerts/page": "app/alerts/page.js",
+  "/demand-shifts/page": "app/demand-shifts/page.js",
+  "/non-moving/page": "app/non-moving/page.js",
+  "/page": "app/page.js",
+  "/segmentation/page": "app/segmentation/page.js",
+  "/sku/[id]/page": "app/sku/[id]/page.js"
+}

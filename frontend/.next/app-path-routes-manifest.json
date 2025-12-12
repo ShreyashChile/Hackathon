@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/alerts/page": "/alerts",
+  "/demand-shifts/page": "/demand-shifts",
+  "/favicon.ico/route": "/favicon.ico",
+  "/non-moving/page": "/non-moving",
+  "/page": "/",
+  "/segmentation/page": "/segmentation",
+  "/settings/page": "/settings",
+  "/sku/[id]/page": "/sku/[id]"
+}
