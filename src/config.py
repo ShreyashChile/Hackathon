@@ -10,6 +10,15 @@ from datetime import date
 
 class NonMovingConfig(BaseModel):
     """Configuration for non-moving inventory detection."""
+    # Duration thresholds (in weeks) - configurable
+    non_moving_weeks_3m: int = 12   # 3 months
+    non_moving_weeks_6m: int = 26   # 6 months  
+    non_moving_weeks_1y: int = 52   # 1 year
+    
+    # Default threshold to use (in weeks)
+    default_threshold_weeks: int = 12  # 12 weeks as per requirement
+    
+    # Legacy thresholds (keeping for backwards compatibility)
     slow_moving_days: int = 60
     non_moving_days: int = 90
     dead_stock_days: int = 180
@@ -41,6 +50,32 @@ class ScoringConfig(BaseModel):
     inventory_value_weight: float = 0.10
 
 
+class DatabaseConfig(BaseModel):
+    """Configuration for PostgreSQL database connection."""
+    host: str = "localhost"
+    database: str = "inventory_db"
+    user: str = "postgres"
+    password: str = ""
+    port: int = 5432
+    schema_name: str = "inventory"
+    
+    @classmethod
+    def from_env(cls) -> "DatabaseConfig":
+        """Load database configuration from environment variables."""
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        return cls(
+            host=os.getenv('POSTGRES_HOST', 'localhost'),
+            database=os.getenv('POSTGRES_DATABASE', 'inventory_db'),
+            user=os.getenv('POSTGRES_USER', 'postgres'),
+            password=os.getenv('POSTGRES_PASSWORD', ''),
+            port=int(os.getenv('POSTGRES_PORT', '5432')),
+            schema_name=os.getenv('POSTGRES_SCHEMA', 'inventory')
+        )
+
+
 class Config(BaseModel):
     """Main configuration class."""
     # Paths
@@ -52,6 +87,7 @@ class Config(BaseModel):
     demand_shift: DemandShiftConfig = DemandShiftConfig()
     segmentation: SegmentationConfig = SegmentationConfig()
     scoring: ScoringConfig = ScoringConfig()
+    database: DatabaseConfig = DatabaseConfig()
     
     # Analysis settings
     analysis_date: Optional[date] = None  # If None, use latest date in data

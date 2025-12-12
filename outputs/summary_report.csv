@@ -6,10 +6,10 @@ Items - Dead Stock,8.0
 Items - Non Moving,0.0
 Items - Slow Moving,4.0
 Items - Active,228.0
-Risk Level - Critical,0.0
-Risk Level - High,1.0
+Risk Level - Critical,4.0
+Risk Level - High,3.0
 Risk Level - Medium,132.0
-Risk Level - Low,91.0
+Risk Level - Low,85.0
 Risk Level - Minimal,16.0
 Segment - AX,7.0
 Segment - AY,9.0

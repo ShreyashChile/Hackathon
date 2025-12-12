@@ -82,6 +82,17 @@ class SupplierSchema(BaseModel):
     defect_rate_pct: float
 
 
+class PurchaseOrderSchema(BaseModel):
+    """Schema for purchase orders."""
+    po_id: str
+    order_week: date
+    expected_week: date
+    item_id: str
+    location_id: str
+    supplier_id: str
+    qty_ordered: int
+
+
 class AnalysisDataset:
     """Container for all analysis data."""
     
@@ -95,6 +106,7 @@ class AnalysisDataset:
         reorder_policies: pd.DataFrame,
         suppliers: pd.DataFrame,
         non_moving_candidates: pd.DataFrame,
+        purchase_orders: Optional[pd.DataFrame] = None,
         merged_data: Optional[pd.DataFrame] = None
     ):
         self.items = items
@@ -105,6 +117,7 @@ class AnalysisDataset:
         self.reorder_policies = reorder_policies
         self.suppliers = suppliers
         self.non_moving_candidates = non_moving_candidates
+        self.purchase_orders = purchase_orders if purchase_orders is not None else pd.DataFrame()
         self.merged_data = merged_data
     
     @property

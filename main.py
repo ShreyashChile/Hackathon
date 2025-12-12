@@ -18,10 +18,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def run_analysis(data_dir: str = "data", output_dir: str = "outputs"):
-    """Run the complete analysis pipeline."""
+def run_analysis(data_dir: str = "data", output_dir: str = "outputs", source: str = "csv"):
+    """
+    Run the complete analysis pipeline.
+    
+    Args:
+        data_dir: Path to data directory (used when source='csv')
+        output_dir: Path to output directory
+        source: Data source - 'csv' for CSV files, 'postgres' for PostgreSQL
+    """
     from src.config import update_config
     from src.data.loader import DataLoader
+    from src.data.postgres_loader import PostgresDataLoader
     from src.data.preprocessor import DataPreprocessor
     from src.ml.demand_shift import DemandShiftDetector
     from src.ml.non_moving import NonMovingDetector
@@ -41,7 +49,14 @@ def run_analysis(data_dir: str = "data", output_dir: str = "outputs"):
     
     # Step 1: Load data
     logger.info("\n[1/7] Loading data...")
-    loader = DataLoader(data_dir)
+    
+    if source == "postgres":
+        logger.info("Data source: PostgreSQL")
+        loader = PostgresDataLoader()
+    else:
+        logger.info(f"Data source: CSV files from {data_dir}")
+        loader = DataLoader(data_dir)
+    
     dataset = loader.load_all()
     logger.info(f"Loaded {len(dataset.sku_list)} SKUs across {len(dataset.location_list)} locations")
     
@@ -50,9 +65,9 @@ def run_analysis(data_dir: str = "data", output_dir: str = "outputs"):
     preprocessor = DataPreprocessor(dataset)
     dataset = preprocessor.preprocess()
     
-    # Step 3: Initialize database
-    logger.info("\n[3/7] Initializing database...")
-    db = DatabaseManager(Path(output_dir) / "inventory_analysis.db")
+    # Step 3: Initialize PostgreSQL database
+    logger.info("\n[3/7] Initializing PostgreSQL database...")
+    db = DatabaseManager()  # Uses environment variables for PostgreSQL connection
     run_id = db.create_run(
         total_skus=len(dataset.sku_list),
         total_locations=len(dataset.location_list),
@@ -73,7 +88,12 @@ def run_analysis(data_dir: str = "data", output_dir: str = "outputs"):
     logger.info("\n[5/7] Detecting non-moving inventory...")
     nm_detector = NonMovingDetector()
     non_moving = nm_detector.detect(dataset)
-    logger.info(f"Movement categories:\n{non_moving['movement_category'].value_counts().to_string()}")
+    nm_summary = nm_detector.get_summary(non_moving)
+    logger.info("Movement status breakdown:")
+    logger.info(f"  - Active: {nm_summary['active']}")
+    logger.info(f"  - Non-moving: {nm_summary['non_moving']}")
+    logger.info(f"  - On Hold (has open PO): {nm_summary['on_hold']}")
+    logger.info(f"  - Items with inventory at risk: {nm_summary['with_inventory_at_risk']}")
     db.save_non_moving(run_id, non_moving)
     
     # Step 6: ABC-XYZ Segmentation
@@ -134,9 +154,10 @@ def run_analysis(data_dir: str = "data", output_dir: str = "outputs"):
     logger.info("ANALYSIS COMPLETE")
     logger.info("=" * 60)
     logger.info(f"Run ID: {run_id}")
-    logger.info(f"\nKEY FINDINGS:")
+    logger.info("\nKEY FINDINGS:")
     logger.info(f"  - Demand shifts detected: {shift_summary['shifts_detected']}")
-    logger.info(f"  - Non-moving items: {len(non_moving[non_moving['movement_category'].astype(str) != 'active'])}")
+    logger.info(f"  - Non-moving items: {nm_summary['non_moving']}")
+    logger.info(f"  - Items on hold (with open PO): {nm_summary['on_hold']}")
     logger.info(f"  - High risk items: {risk_summary['high_risk_items']}")
     logger.info(f"  - Critical alerts: {alert_summary.get('critical_count', 0)}")
     logger.info(f"\nOutputs saved to: {output_dir}/")
@@ -174,9 +195,15 @@ def main():
     # Analyze command
     analyze_parser = subparsers.add_parser("analyze", help="Run analysis pipeline")
     analyze_parser.add_argument(
+        "--source",
+        choices=["csv", "postgres"],
+        default="csv",
+        help="Data source: 'csv' for CSV files, 'postgres' for PostgreSQL (default: csv)"
+    )
+    analyze_parser.add_argument(
         "--data-dir", 
         default="data",
-        help="Path to data directory (default: data)"
+        help="Path to data directory, used when source=csv (default: data)"
     )
     analyze_parser.add_argument(
         "--output-dir",
@@ -206,9 +233,15 @@ def main():
     # Full command (analyze + api)
     full_parser = subparsers.add_parser("full", help="Run analysis and start API")
     full_parser.add_argument(
+        "--source",
+        choices=["csv", "postgres"],
+        default="csv",
+        help="Data source: 'csv' for CSV files, 'postgres' for PostgreSQL (default: csv)"
+    )
+    full_parser.add_argument(
         "--data-dir",
         default="data",
-        help="Path to data directory"
+        help="Path to data directory, used when source=csv"
     )
     full_parser.add_argument(
         "--output-dir",
@@ -230,22 +263,24 @@ def main():
     args = parser.parse_args()
     
     if args.command == "analyze":
-        run_analysis(args.data_dir, args.output_dir)
+        run_analysis(args.data_dir, args.output_dir, args.source)
     elif args.command == "api":
         if args.run_analysis:
             run_analysis()
         start_api(args.host, args.port)
     elif args.command == "full":
-        run_analysis(args.data_dir, args.output_dir)
+        run_analysis(args.data_dir, args.output_dir, args.source)
         start_api(args.host, args.port)
     else:
-        # Default: run analysis
+        # Default: show help
         parser.print_help()
         print("\n" + "=" * 60)
         print("Quick Start:")
-        print("  python main.py analyze    # Run analysis")
-        print("  python main.py api        # Start API server")
-        print("  python main.py full       # Run analysis + start API")
+        print("  python main.py analyze                 # Run analysis (CSV source)")
+        print("  python main.py analyze --source postgres  # Run analysis (PostgreSQL)")
+        print("  python main.py api                     # Start API server")
+        print("  python main.py full                    # Run analysis + start API")
+        print("  python main.py full --source postgres  # Cron job mode")
         print("=" * 60)
 
 

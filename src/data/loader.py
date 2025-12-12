@@ -80,6 +80,14 @@ class DataLoader:
         df = self._load_csv("calendar_weeks.csv", parse_dates=['week_ending'])
         return df
     
+    def load_purchase_orders(self) -> pd.DataFrame:
+        """Load purchase orders data."""
+        df = self._load_csv(
+            "purchase_orders.csv",
+            parse_dates=['order_week', 'expected_week']
+        )
+        return df
+    
     def load_all(self) -> AnalysisDataset:
         """Load all data files into an AnalysisDataset."""
         logger.info("Loading all data files...")
@@ -92,7 +100,8 @@ class DataLoader:
             forecasts=self.load_forecasts(),
             reorder_policies=self.load_reorder_policies(),
             suppliers=self.load_suppliers(),
-            non_moving_candidates=self.load_non_moving_candidates()
+            non_moving_candidates=self.load_non_moving_candidates(),
+            purchase_orders=self.load_purchase_orders()
         )
         
         logger.info(f"Loaded data for {len(dataset.sku_list)} SKUs across {len(dataset.location_list)} locations")
